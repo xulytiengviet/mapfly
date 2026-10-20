@@ -25,7 +25,7 @@ Mở trang web đã bật GitHub Pages; hoặc chạy một web server tĩnh t�
 
 Sau đó truy cập http://localhost:8000. Hệ thống yêu cầu mạng để tải thư viện và dữ liệu bản đồ. Cần trình duyệt có WebGL.
 
-**Triển khai GitHub Pages**: vào Settings → Pages → Build and deployment, chọn **Deploy from a branch** → nhánh `main` và thư mục `/ (root)` → Save. Website sẽ có URL `https://xulytiengviet.github.io/mapfly/` sau khi Pages xuất bản thành công. Không mặc định coi Pages đang hoạt động nếu chưa kiểm tra mục Actions / Deployments.
+**Triển khai GitHub Pages**: repository đã có workflow `.github/workflows/pages.yml`. Vào Settings → Pages → Build and deployment → Source chọn **GitHub Actions**. Kiểm tra workflow **Trien khai MapFly NeuroGIS** tại tab Actions. Website dự kiến có URL `https://xulytiengviet.github.io/mapfly/` sau khi Pages triển khai thành công. Không coi Pages đang hoạt động trước khi workflow kết thúc thành công.
 
 ## Kết nối Google Street View
 
