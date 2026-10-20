@@ -437,6 +437,89 @@ function setupOverlay() {
     resize();
   } catch (err) { console.warn("WebGL overlay:", err); get("fly-overlay").style.display = "none"; }
 }
+
+let povRenderer=null, povScene=null, povCamera=null, povActive=false, povReady=false;
+function ensurePOV() {
+  if (povReady) return true;
+  try {
+    povRenderer = new THREE.WebGLRenderer({ alpha:false, antialias:true, powerPreference:"low-power" });
+    povRenderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
+    povScene = new THREE.Scene();
+    povScene.background = new THREE.Color("#8aafbd");
+    povScene.fog = new THREE.Fog("#9bbfc8", 20, 105);
+    povCamera = new THREE.PerspectiveCamera(66,1,.1,180);
+    povScene.add(new THREE.HemisphereLight(0xf4f9ff,0x60717c,2.0));
+    const sun=new THREE.DirectionalLight(0xffde9a,2.6);sun.position.set(-10,25,-26);povScene.add(sun);
+    const asphalt=new THREE.MeshStandardMaterial({color:"#354850",roughness:.96});
+    const concrete=new THREE.MeshStandardMaterial({color:"#a6b3b0",roughness:.95});
+    const line=new THREE.MeshBasicMaterial({color:"#ffe9a8"});
+    const green=new THREE.MeshStandardMaterial({color:"#578879",roughness:.98});
+    const roads = new THREE.Mesh(new THREE.PlaneGeometry(17,220),asphalt);
+    roads.rotation.x=-Math.PI/2;roads.position.set(0,-1.2,-65);povScene.add(roads);
+    function box(width,height,depth,x,y,z,mat) {
+      const obj = new THREE.Mesh(new THREE.BoxGeometry(width,height,depth),mat);
+      obj.position.set(x,y,z);povScene.add(obj);return obj;
+    }
+    for (const side of [-1,1]) {
+      box(13,.22,220,side*15,-1.16,-65,concrete);
+      box(.19,.08,220,side*8.4,-1.06,-65,line);
+      for(let i=0;i<15;i++){
+        const z=7-i*8.5;
+        const h=5+((i*17+side*11+60)%9)*1.4;
+        const col=["#cba989","#8c9b9d","#c2c5b4","#78969d","#e0c7a4"][(i+(side+1))%5];
+        const mat=new THREE.MeshStandardMaterial({color:col,roughness:.91});
+        box(8,h,6.5,side*(17+Math.sin(i*4.8)*1.6),h/2-1.18,z,mat);
+        for(let row=1;row<Math.floor(h/3);row++){
+          for(let j=0;j<3;j++){
+            const windows=new THREE.MeshStandardMaterial({color:"#405e66",emissive:"#254653",emissiveIntensity:.13});
+            box(.72,1.2,.05,side*(17+Math.sin(i*4.8)*1.6 + (j-1)*2.15),row*2.7-1.0,z+3.29,windows);
+          }
+        }
+        box(1,4,1,side*10.8,.83,z-2,green);
+      }
+    }
+    for(let i=0;i<27;i++){
+      box(.23,.012,3,0,-1.065,9-i*7.8,line);
+    }
+    const resize=()=>{
+      const rect=get("street-box").getBoundingClientRect();
+      if (rect.width<=0||rect.height<=0)return;
+      povRenderer.setSize(rect.width,rect.height,false);
+      povCamera.aspect=rect.width/rect.height;povCamera.updateProjectionMatrix();
+    };
+    new ResizeObserver(resize).observe(get("street-box"));
+    povReady=true;
+    resize();
+    return true;
+  }catch(error){
+    console.warn("Không dựng được góc nhìn ruồi 3D",error);
+    return false;
+  }
+}
+function showPOV() {
+  if (!ensurePOV()) {
+    get("street-box").innerHTML='<div class="street-empty"><b>Thiết bị không hỗ trợ WebGL</b>Vẫn có thể mở Google Maps theo liên kết bên dưới.</div>';
+    povActive=false;
+    return;
+  }
+  const tag=document.createElement("span");
+  tag.className="pov-label";
+  tag.textContent="PHỐ 3D GIẢ LẬP · KHÔNG PHẢI ẢNH THỰC";
+  get("street-box").replaceChildren(povRenderer.domElement,tag);
+  povActive=true;
+  const rect=get("street-box").getBoundingClientRect();
+  povRenderer.setSize(rect.width,rect.height,false);
+  povCamera.aspect=rect.width/rect.height;povCamera.updateProjectionMatrix();
+  announce("Đang xem đường phố 3D tạo từ hình học giả lập, không cần API key.");
+}
+function renderPOV() {
+  if (!povReady || !povActive) return;
+  const radians=state.heading;
+  povCamera.position.set(Math.sin(radians)*.65,clamp(settings.altitude*.18+.9,1.4,5.4),11+Math.sin(state.time*.16)*.35);
+  povCamera.lookAt(Math.sin(radians)*3,1.1,-22);
+  povRenderer.render(povScene,povCamera);
+}
+
 function streetUrl() {
   return "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=" +
     state.lat.toFixed(6) + "," + state.lng.toFixed(6) + "&heading=" + Math.round(radToBearing(state.heading));
@@ -459,11 +542,12 @@ function syncStreet() {
   frame.referrerPolicy = "strict-origin-when-cross-origin";
   frame.src = "https://www.google.com/maps/embed/v1/streetview?" + params.toString();
   get("street-box").replaceChildren(frame);
+  povActive=false;
   announce("Đã gửi tọa độ hiện tại tới Google Street View. Ảnh panorama có thể không khả dụng.");
 }
 function clearStreet() {
-  get("street-box").innerHTML = '<div class="street-empty"><b>Đã đóng Street View</b>Nhấn Đồng bộ Street View để mở lại ảnh 360°.</div>';
   get("google-key").value = "";
+  showPOV();
 }
 function exportPath() {
   const features = [
@@ -520,6 +604,7 @@ function bind() {
   get("zoom-in").addEventListener("click", () => { if (map) map.zoomIn(); else if(vMap) vMap.zoomIn(); });
   get("zoom-out").addEventListener("click", () => { if (map) map.zoomOut(); else if(vMap) vMap.zoomOut(); });
   get("street-sync").addEventListener("click", syncStreet);
+  get("pov-btn").addEventListener("click", showPOV);
   get("street-clear").addEventListener("click", clearStreet);
 }
 let lastFrame = 0;
@@ -541,6 +626,7 @@ function loop(timestamp) {
     specimenCamera.lookAt(-.30,-.1,0);
     specimenRenderer.render(specimenScene,specimenCamera);
   }
+  renderPOV();
   if (overlayRenderer && (map || vMap) && overlayCarrier) {
     const p = map ? map.project([state.lng, state.lat]) : vMap.latLngToContainerPoint([state.lat,state.lng]);
     const rect = get("map").getBoundingClientRect();
@@ -566,4 +652,5 @@ setCity("hcm", false);
 switchMapEngine("vietflex");
 setupSpecimen();
 setupOverlay();
+showPOV();
 requestAnimationFrame(loop);
