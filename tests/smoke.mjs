@@ -1,0 +1,23 @@
+import fs from "node:fs";
+import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
+
+const html = fs.readFileSync("index.html", "utf8");
+const js = fs.readFileSync("app.js", "utf8");
+assert.match(html, /<html lang="vi">/);
+assert.match(html, /vietflex\.js/);
+assert.match(html, /id="renderer"/);
+assert.match(html, /id="street-box"/);
+assert.match(html, /id="pov-btn"/);
+assert.match(js, /googleMaps:false, useLegacyGoogleTiles:false/);
+assert.match(js, /https:\/\/tile\.openstreetmap\.org\/\{z\}\/\{x\}\/\{y\}\.png/);
+assert.match(js, /Vietflex\.Polyline/);
+assert.match(js, /Vietflex\.CircleMarker/);
+assert.match(js, /function switchMapEngine/);
+assert.match(js, /function showPOV/);
+assert.match(js, /map\.project\(/);
+assert.match(js, /latLngToContainerPoint/);
+assert.match(js, /"https:\/\/www\.google\.com\/maps\/@\?api=1/);
+assert.doesNotMatch(js, /google\.com\/vt\//);
+execFileSync(process.execPath, ["--check", "app.js"], { stdio: "inherit" });
+console.log("✓ MapFly: Vietflex + OSM + 3D POV + Google Maps link (smoke test tĩnh)");
