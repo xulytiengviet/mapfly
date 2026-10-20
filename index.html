@@ -9,6 +9,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Vietflexmap/VN@6144d565fcf236727577ab3c4471bbe49f86892f/dist/vietflex.css">
+  <script src="https://cdn.jsdelivr.net/gh/Vietflexmap/VN@6144d565fcf236727577ab3c4471bbe49f86892f/dist/vietflex.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.6.2/dist/maplibre-gl.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.6.2/dist/maplibre-gl.js"></script>
   <style>
@@ -35,7 +37,7 @@
     .toggle input{width:16px;height:16px;accent-color:var(--teal)}
     .notice{font-size:10px;line-height:1.7;color:#92aab4;border:1px solid #36515a;border-radius:12px;padding:12px;background:#102732;margin-top:22px}
     .notice strong{color:#ffd98f}.credit{color:#688b9c;font-size:10px;line-height:1.7;margin-top:20px}
-    .workspace{position:relative;min-height:0;background:#132631;isolation:isolate}.map{position:absolute;inset:0}.fly-overlay{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
+    .workspace{position:relative;min-height:0;background:#132631;isolation:isolate}.map{position:absolute;inset:0}.map.leaflet-container{background:#132631}.leaflet-control-attribution{font-size:9px!important}.leaflet-bottom.leaflet-right{bottom:2px;right:10px}.leaflet-control-attribution a{color:#176d69!important}.fly-overlay{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
     .workspace:after{content:"";position:absolute;inset:0 0 auto;height:225px;background:linear-gradient(#06151cdd,transparent);pointer-events:none;z-index:2}
     .map-header{position:absolute;z-index:4;top:26px;left:26px;right:26px;display:flex;justify-content:space-between;align-items:flex-start;gap:20px;pointer-events:none}
     .map-header h1{font-size:clamp(21px,2vw,32px);letter-spacing:-.045em;line-height:1.27;margin:9px 0;color:white;max-width:460px}
@@ -61,7 +63,7 @@
     .bar{height:6px;background:#25424d;border-radius:10px;overflow:hidden}.bar>span{height:100%;display:block;border-radius:10px;background:linear-gradient(90deg,#358e95,#91e6cd);transition:width .15s}
     .state-text{background:#19333e;border:1px solid #2f515d;border-radius:9px;padding:10px;color:#ffdc97;font-size:11px;margin-top:12px}
     .street-box{height:210px;border:1px solid #345360;background:#0b202a;border-radius:11px;display:grid;place-items:center;text-align:center;padding:15px;position:relative;overflow:hidden}
-    .street-box iframe{width:100%;height:100%;border:0;position:absolute;inset:0}
+    .street-box iframe,.street-box canvas{width:100%;height:100%;border:0;position:absolute;inset:0;display:block}.street-box .pov-label{position:absolute;z-index:2;top:10px;left:10px;background:#082c36cc;color:#d9fff2;font:600 9px "JetBrains Mono",monospace;letter-spacing:.03em;border:1px solid #497f86;padding:7px 8px;border-radius:7px;pointer-events:none}
     .street-empty{font-size:11px;color:#aac1c9;line-height:1.9}
     .street-empty b{display:block;color:#ffce70;font-size:13px;margin-bottom:5px}
     .street-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
@@ -82,6 +84,8 @@
     <header class="brand"><div class="brand-mark" aria-hidden="true">✳</div><div><div class="brand-name">MAP<span>FLY</span></div><div class="brand-sub">NEUROGIS · PHÒNG THÍ NGHIỆM</div></div></header>
     <p class="intro">Thử nghiệm tác tử ruồi giấm bay trong không gian đô thị, kết hợp bản đồ GIS, hình học 3D và các phản ứng cảm biến minh họa.</p>
     <div class="eyebrow">01 / KỊCH BẢN BAY</div>
+    <label class="field"><div class="field-header"><span>Nền bản đồ (không cần API key)</span><span class="value">MIỄN PHÍ</span></div><select id="renderer"><option value="vietflex">Vietflex + OSM · 2D nhẹ</option><option value="maplibre">MapLibre + OSM · 3D đô thị</option></select></label>
+    <p class="small" id="engine-note">Vietflex hoạt động với lớp OSM và hiển thị ruồi 3D; không tải Google Tiles không chính thức.</p>
     <label class="field"><div class="field-header"><span>Khu vực nghiên cứu</span></div><select id="city"><option value="hcm">TP. Hồ Chí Minh · Bến Thành</option><option value="hanoi">Hà Nội · Hồ Hoàn Kiếm</option><option value="vinhlong">Vĩnh Long · Trung tâm</option></select></label>
     <div class="actions"><button id="start" class="btn btn-primary">▶ Bắt đầu bay</button><button id="pause" class="btn">Ⅱ Tạm dừng</button><button id="reset" class="btn btn-ghost">↺ Đặt lại</button><button id="export" class="btn btn-ghost">↓ Xuất GeoJSON</button></div>
     <section class="section"><div class="eyebrow">02 / THÔNG SỐ TÁC TỬ</div>
@@ -93,19 +97,19 @@
     </section>
     <section class="section"><div class="eyebrow">03 / HIỂN THỊ BẢN ĐỒ</div>
       <label class="toggle">Tự bám theo ruồi <input id="follow" type="checkbox" checked></label>
-      <label class="toggle">Công trình 3D từ OSM <input id="buildings" type="checkbox" checked></label>
+      <label class="toggle">Công trình 3D (chế độ OSM 3D) <input id="buildings" type="checkbox" checked></label>
       <label class="toggle">Hiện vệt đường bay <input id="trail" type="checkbox" checked></label>
       <button id="recenter" class="btn btn-wide btn-ghost">⌖ Đưa bản đồ về tác tử</button>
     </section>
     <div class="notice"><strong>Lưu ý khoa học:</strong> Đây là mô phỏng điều hướng dựa trên quy tắc (Geo-ABM), chưa sử dụng trực tiếp toàn bộ kết nối thần kinh MaleCNS hay FlyWire. Ruồi trên bản đồ được phóng đại để nhìn rõ, không theo tỷ lệ thực tế.</div>
-    <footer class="credit">Thiết kế: Long Ngo · Giấy phép MIT (mã MapFly).<br>OSM contributors · OpenFreeMap · MapLibre · Three.js.</footer>
+    <footer class="credit">Thiết kế: Long Ngo · Giấy phép MIT (mã MapFly).<br>Vietflex · OpenStreetMap contributors · MapLibre · Three.js. Mọi lớp nền phải tuân thủ điều kiện của nhà cung cấp.</footer>
   </aside>
   <main class="workspace" aria-label="Bản đồ mô phỏng không gian địa lý">
-    <div id="map" class="map" role="application" aria-label="Bản đồ OpenStreetMap tương tác"></div>
+    <div id="map" class="map" role="application" aria-label="Bản đồ Vietflex hoặc MapLibre dựa trên dữ liệu OpenStreetMap"></div>
     <canvas id="fly-overlay" class="fly-overlay" aria-hidden="true"></canvas>
     <div class="map-header"><div><div class="eyebrow">THÍ NGHIỆM GEO-ABM / KHÔNG GIAN 3 CHIỀU</div><h1>Một con ruồi.<br>Cả thành phố.</h1><p>Theo dõi lộ trình, độ cao, cảm biến và chuyển động của ruồi giấm trong môi trường địa lý.</p></div><div id="run-status" class="live-pill"><i></i><span>ĐANG TẠM DỪNG</span></div></div>
     <div class="map-tools"><button class="icon-btn" id="pitch" title="Chuyển góc nhìn 2D / 3D" aria-label="Chuyển góc nhìn 2D / 3D">◈</button><button class="icon-btn" id="zoom-in" title="Phóng to" aria-label="Phóng to">+</button><button class="icon-btn" id="zoom-out" title="Thu nhỏ" aria-label="Thu nhỏ">−</button></div>
-    <div class="map-footer"><div id="map-tip" class="tip">⌖ Chạm vào bản đồ để đặt điểm đích mới · Di chuyển bản đồ bằng chuột</div><div class="metrics">
+    <div class="map-footer"><div id="map-tip" class="tip">⌖ Chạm vào bản đồ để đặt điểm đích mới · Nhấn ◈ để chuyển chế độ OSM 3D</div><div class="metrics">
       <div class="metric"><small>TỌA ĐỘ WGS84</small><strong id="position">10.77595° N</strong><em id="position-lng">106.70103° E</em></div>
       <div class="metric"><small>QUÃNG ĐƯỜNG</small><strong id="distance">0.0 m</strong><em>Mô phỏng quy tắc</em></div>
       <div class="metric"><small>VẬN TỐC / ĐỘ CAO</small><strong id="velocity">0.0 m/s</strong><em id="height-readout">Cao 5 m</em></div>
@@ -124,11 +128,14 @@
       <p class="small">Các thanh phản ứng là giá trị minh họa theo quy tắc, không phải kết quả đo neuron hay dự đoán từ mô hình connectome thật.</p>
     </section>
     <section class="panel"><div class="panel-head"><h2>Google Street View</h2><span class="tag">360°</span></div>
-      <div id="street-box" class="street-box"><div class="street-empty"><b>Khám phá ở tầm đường phố</b>Nhập khóa Maps Embed API đã giới hạn theo tên miền để xem ảnh 360° tại vị trí ruồi.</div></div>
-      <label class="field"><div class="field-header"><span>Khóa Google Maps Embed API (không lưu lại)</span></div><input id="google-key" type="password" class="key-input" autocomplete="off" placeholder="Nhập API key để nhúng Street View"></label>
-      <div class="street-actions"><button id="street-sync" class="btn btn-primary">↻ Đồng bộ Street View</button><button id="street-clear" class="btn">✕ Đóng ảnh</button></div>
-      <a id="street-external" class="street-link" href="https://www.google.com/maps" target="_blank" rel="noopener noreferrer">↗ Mở tại Google Maps (không cần API key)</a>
-      <p class="small">Street View là ảnh panorama gần tọa độ, không phải luồng camera của ruồi và không bảo đảm phủ sóng mọi vị trí. Nội dung của Google chỉ hiển thị trong khung nhúng chính thức, không đưa vào Three.js.</p>
+      <div id="street-box" class="street-box"><div class="street-empty"><b>Góc nhìn ruồi 3D · miễn phí</b>Phố 3D tổng hợp, mô phỏng bằng Three.js. Không phải ảnh đường phố thực.</div></div>
+      <button id="pov-btn" class="btn btn-primary btn-wide" style="margin-top:10px">◈ Xem góc nhìn ruồi 3D · Không cần API key</button>
+      <details style="margin-top:13px"><summary style="cursor:pointer;color:#b3cbd3;font-size:11px">Tùy chọn: nhúng Google Street View (cần API key)</summary>
+        <label class="field"><div class="field-header"><span>Google Maps Embed API key (không lưu lại)</span></div><input id="google-key" type="password" class="key-input" autocomplete="off" placeholder="Nhập khóa đã giới hạn tên miền"></label>
+        <div class="street-actions"><button id="street-sync" class="btn">↻ Hiện Google Street View</button><button id="street-clear" class="btn">✕ Trở lại 3D giả lập</button></div>
+      </details>
+      <a id="street-external" class="street-link" href="https://www.google.com/maps" target="_blank" rel="noopener noreferrer">↗ Xem Street View trên Google Maps · mở liên kết miễn phí</a>
+      <p class="small">Góc nhìn 3D là cảnh tổng hợp mang tính minh họa, không phải dữ liệu nhà cửa hay ảnh phố thực. Google Street View mở qua liên kết công khai không yêu cầu API key; nhúng trực tiếp cần Google Maps Embed API và có thể phát sinh phí tùy cách sử dụng.</p>
     </section>
     <section class="panel"><div class="panel-head"><h2>Nguồn connectome & kỹ thuật</h2><span class="tag">Tài liệu</span></div><div class="data-note">Kết nối thần kinh thực được nghiên cứu độc lập qua <a href="https://codex.flywire.ai/" target="_blank" rel="noopener">FlyWire Codex</a>, <a href="https://github.com/CAVEconnectome" target="_blank" rel="noopener">CAVE</a>, <a href="https://github.com/google/neuroglancer" target="_blank" rel="noopener">Neuroglancer</a> và <a href="https://github.com/seung-lab/FlyConnectome" target="_blank" rel="noopener">FlyConnectome</a>. Tham khảo <a href="https://github.com/erojasoficial-byte/fly-brain" target="_blank" rel="noopener">fly-brain / MuJoCo</a> để phát triển pipeline mô phỏng toàn não riêng. <a href="https://male-cns.janelia.org/" target="_blank" rel="noopener">MaleCNS v1.0</a> (ruồi <strong>đực</strong>, 166.700 neuron) là dữ liệu CNS riêng biệt. Tập FlyWire FAFB công bố trên Nature 2024 thuộc ruồi <strong>cái</strong> (139.255 neuron). Cần kiểm tra giấy phép của từng bộ dữ liệu trước khi tích hợp.</div></section>
   </aside>
