@@ -130,7 +130,8 @@ function createVietflex() {
       attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>'
     }).addTo(vMap);
     vRoute = new Vietflex.Polyline([], { color:"#1b8d9c",dashArray:"5 7",weight:3,opacity:.8 }).addTo(vMap);
-    vTrack = new Vietflex.Polyline([], { color:"#ffca73",weight:4,opacity:.96 }).addTo(vMap);
+    vTrack = new Vietflex.Polyline([], { color:"#ffca73",weight:4,opacity:.96 });
+    if (settings.trail) vTrack.addTo(vMap);
     vMarkers = new Vietflex.LayerGroup().addTo(vMap);
     vMap.on("click",(event)=>{
       const clicked = {lat:event.latlng.lat,lng:event.latlng.lng};
