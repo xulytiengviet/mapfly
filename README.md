@@ -25,12 +25,12 @@ Mở trang web đã bật GitHub Pages; hoặc chạy một web server tĩnh t�
 
 Sau đó truy cập http://localhost:8000. Hệ thống yêu cầu mạng để tải thư viện và dữ liệu bản đồ. Cần trình duyệt có WebGL.
 
-**Triển khai GitHub Pages**: vào Settings → Pages → Build and deployment, chọn **Deploy from a branch** → nhánh \`main\` và thư mục \`/ (root)\` → Save. Website sẽ có URL \`https://xulytiengviet.github.io/mapfly/\` sau khi Pages xuất bản thành công. Không mặc định coi Pages đang hoạt động nếu chưa kiểm tra mục Actions / Deployments.
+**Triển khai GitHub Pages**: vào Settings → Pages → Build and deployment, chọn **Deploy from a branch** → nhánh `main` và thư mục `/ (root)` → Save. Website sẽ có URL `https://xulytiengviet.github.io/mapfly/` sau khi Pages xuất bản thành công. Không mặc định coi Pages đang hoạt động nếu chưa kiểm tra mục Actions / Deployments.
 
 ## Kết nối Google Street View
 
 1. Tạo Google Cloud project, bật **Maps Embed API** và thiết lập billing theo yêu cầu của Google.
-2. Cấp API key, **giới hạn HTTP referrers** cho \`https://xulytiengviet.github.io/mapfly/*\` và \`http://localhost:8000/*\` (nếu thử tại máy), đồng thời giới hạn key chỉ cho Maps Embed API.
+2. Cấp API key, **giới hạn HTTP referrers** cho `https://xulytiengviet.github.io/mapfly/*` và `http://localhost:8000/*` (nếu thử tại máy), đồng thời giới hạn key chỉ cho Maps Embed API.
 3. Nhập khóa trực tiếp vào giao diện, nhấn **Đồng bộ Street View** để tải ảnh panorama tại vị trí hiện tại. Khóa tồn tại trong ô nhập và URL iframe trong phiên trang, không được ghi vào kho mã nguồn.
 4. Không có key vẫn dùng **Mở tại Google Maps** để truy cập Street View nếu khu vực có panorama.
 
@@ -70,8 +70,8 @@ Tham khảo: https://developers.google.com/maps/documentation/embed/embedding-ma
 
 1. Tải **dữ liệu MaleCNS theo giấy phép và điều kiện áp dụng**, kiểm tra phiên bản, neuron ID, synapse weights và nguồn của annotations.
 2. Tạo một dịch vụ tính toán riêng phía server/GPU chạy neural step. Không tải toàn bộ connectome và ảnh EM vào trang GitHub Pages.
-3. Chuẩn hóa đầu vào cảm giác sang một hợp đồng JSON rõ ràng (ví dụ \`vision.flow\`, \`olfaction.left/right\`, \`mechanosensation\`), đồng bộ \`dt\` và hệ đơn vị.
-4. Xuất ra dự đoán điều khiển \`turn_rate\`, \`forward_speed\`, \`flight_state\` kèm nguồn mô hình/phiên bản/uncertainty. Ánh xạ hành động về chuyển động trên WebGIS.
+3. Chuẩn hóa đầu vào cảm giác sang một hợp đồng JSON rõ ràng (ví dụ `vision.flow`, `olfaction.left/right`, `mechanosensation`), đồng bộ `dt` và hệ đơn vị.
+4. Xuất ra dự đoán điều khiển `turn_rate`, `forward_speed`, `flight_state` kèm nguồn mô hình/phiên bản/uncertainty. Ánh xạ hành động về chuyển động trên WebGIS.
 5. Kiểm định độ trung thực, độ trễ, mô hình cảm biến và so sánh với hành vi sinh học thực nghiệm trước khi sử dụng tuyên bố khoa học.
 
 Tài liệu cụ thể về giao diện: [docs/NEURAL-BRIDGE.md](docs/NEURAL-BRIDGE.md).
