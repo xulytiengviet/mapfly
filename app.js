@@ -69,6 +69,7 @@ function setCity(city, moveCamera = true) {
   state.behavior = "chờ lệnh xuất phát";
   state.running = false;
   if (map && moveCamera) map.flyTo({ center: [place.lng, place.lat], zoom: place.zoom, pitch: 57, bearing: -17, speed: 1.1 });
+  if (vMap && moveCamera) vMap.setView([place.lat, place.lng], place.zoom, { animate: true });
   updateNumbers();
   refreshGeography();
 }
@@ -78,7 +79,90 @@ function setRunning(running) {
   updateNumbers();
 }
 
-let map;
+let map, vMap, vBase, vRoute, vTrack, vMarkers;
+let mapEngine = "vietflex";
+function vfPoint(p) { return [p.lat, p.lng]; }
+function showEngineNote() {
+  const threeD = mapEngine === "maplibre";
+  get("renderer").value = mapEngine;
+  get("engine-note").textContent = threeD
+    ? "OSM 3D · MapLibre hiển thị công trình khi có dữ liệu chiều cao. Không cần API key."
+    : "Vietflex + OSM nhẹ · ruồi 3D nổi trên bản đồ 2D. Không dùng Google Tiles không chính thức.";
+  get("buildings").disabled = !threeD;
+  get("pitch").title = threeD ? "Chuyển góc nhìn 2D / 3D" : "Chuyển sang OSM 3D (MapLibre)";
+}
+function refreshVietflex() {
+  if (!vMap) return;
+  if (vRoute) vRoute.setLatLngs(state.waypoints.map(vfPoint));
+  if (vTrack) vTrack.setLatLngs(state.trajectory.map(p => [p[1], p[0]]));
+  if (vMarkers) {
+    vMarkers.clearLayers();
+    const all = state.waypoints.map((p,i) => ({
+      location: p, color: i === state.targetIndex ? "#ffc674" : "#1c7f94",
+      label: i === state.targetIndex ? "Điểm đích" : "Điểm hành trình", radius: i === state.targetIndex ? 8 : 5
+    }));
+    const place = CITIES[state.city];
+    all.push({ location: localToGeo(place.lat,place.lng,120,-24), color:"#5dddb6", label:"Nguồn mùi mô phỏng", radius:9 });
+    all.push({ location: localToGeo(place.lat,place.lng,-46,114), color:"#f88b72", label:"Vùng nguy cơ mô phỏng", radius:9 });
+    for (const p of all) {
+      const marker = new Vietflex.CircleMarker(vfPoint(p.location), {
+        radius:p.radius, color:"#e7ffff",weight:2,fillColor:p.color,fillOpacity:.92,bubblingMouseEvents:false
+      });
+      marker.bindPopup(p.label);
+      marker.addTo(vMarkers);
+    }
+  }
+}
+function createVietflex() {
+  if (!window.Vietflex || !window.Vietflex.vietflexMap) {
+    get("map-tip").textContent = "Không tải được Vietflex. Đang chuyển sang bản đồ 3D MapLibre.";
+    mapEngine = "maplibre";showEngineNote();createMap();return;
+  }
+  try {
+    const place = CITIES[state.city];
+    vMap = Vietflex.vietflexMap("map", {
+      googleMaps:false, useLegacyGoogleTiles:false, center:[state.lat,state.lng],
+      zoom:place.zoom, minZoom:3, maxZoom:19, zoomControl:false, attributionControl:true,
+      maxBounds:[[-85,-180],[85,180]]
+    });
+    vBase = new Vietflex.TileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom:19, minZoom:2,
+      attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>'
+    }).addTo(vMap);
+    vRoute = new Vietflex.Polyline([], { color:"#1b8d9c",dashArray:"5 7",weight:3,opacity:.8 }).addTo(vMap);
+    vTrack = new Vietflex.Polyline([], { color:"#ffca73",weight:4,opacity:.96 }).addTo(vMap);
+    vMarkers = new Vietflex.LayerGroup().addTo(vMap);
+    vMap.on("click",(event)=>{
+      const clicked = {lat:event.latlng.lat,lng:event.latlng.lng};
+      state.waypoints = [{lat:state.lat,lng:state.lng}, clicked];
+      state.targetIndex = 1; refreshGeography();
+      announce("Đã đặt điểm đích mới tại "+clicked.lat.toFixed(5)+", "+clicked.lng.toFixed(5));
+      get("map-tip").textContent = "✓ Đã chọn điểm đích mới · Nhấn Bắt đầu bay để di chuyển";
+    });
+    get("map-tip").textContent = "✓ Vietflex + OpenStreetMap miễn phí · Chạm vào bản đồ để chọn điểm đích";
+    state.loaded = true;
+    refreshGeography();
+    requestAnimationFrame(()=>vMap?.invalidateSize());
+  } catch(err) {
+    console.error("Không khởi tạo được Vietflex",err);
+    if (vMap) {try{vMap.remove();}catch(e){console.warn(e);}}
+    vMap=null;mapEngine="maplibre";showEngineNote();createMap();
+  }
+}
+function switchMapEngine(next) {
+  if (next !== "vietflex" && next !== "maplibre") return;
+  if (next===mapEngine && (map || vMap)) return;
+  if (map) {map.remove();map=null;}
+  if (vMap) {vMap.remove();vMap=null;}
+  vBase=vRoute=vTrack=vMarkers=null;
+  state.loaded=false;
+  const el=get("map");
+  el.replaceChildren();el.className="map";el.removeAttribute("style");
+  mapEngine=next;
+  showEngineNote();
+  if (mapEngine==="vietflex") createVietflex();
+  else createMap();
+}
 function sourceData(id, data) {
   if (map && state.loaded && map.getSource(id)) map.getSource(id).setData(data);
 }
@@ -95,6 +179,7 @@ function waypointFeatures() {
   return featureCollection(items);
 }
 function refreshGeography() {
+  refreshVietflex();
   sourceData("mapfly-route", featureCollection([featureLine(state.waypoints.map(coordinatePair), "Tuyến mục tiêu")]));
   sourceData("mapfly-track", featureCollection([featureLine(state.trajectory, "Hành trình mô phỏng")]));
   sourceData("mapfly-waypoints", waypointFeatures());
@@ -409,6 +494,7 @@ function bind() {
     });
   }
   get("city").addEventListener("change", (e) => setCity(e.target.value));
+  get("renderer").addEventListener("change",(e)=>switchMapEngine(e.target.value));
   get("start").addEventListener("click", () => setRunning(true));
   get("pause").addEventListener("click", () => setRunning(false));
   get("reset").addEventListener("click", () => setCity(state.city));
@@ -421,15 +507,18 @@ function bind() {
   get("trail").addEventListener("change", (e) => {
     settings.trail = e.target.checked;
     for (const id of ["mapfly-track-line","mapfly-track-glow"]) if (map && map.getLayer(id)) map.setLayoutProperty(id,"visibility",settings.trail ? "visible":"none");
+    if (vTrack) settings.trail ? vTrack.addTo(vMap) : vMap.removeLayer(vTrack);
   });
   get("recenter").addEventListener("click", () => {
     if (map) map.flyTo({ center: [state.lng,state.lat], zoom: 16.6, pitch: 57, bearing: -17 });
+    if (vMap) vMap.setView([state.lat,state.lng],16.6);
   });
   get("pitch").addEventListener("click", () => {
-    if (map) map.easeTo({ pitch: map.getPitch() > 10 ? 0 : 58, duration: 700 });
+    if (vMap) switchMapEngine("maplibre");
+    else if (map) map.easeTo({ pitch: map.getPitch() > 10 ? 0 : 58, duration: 700 });
   });
-  get("zoom-in").addEventListener("click", () => { if (map) map.zoomIn(); });
-  get("zoom-out").addEventListener("click", () => { if (map) map.zoomOut(); });
+  get("zoom-in").addEventListener("click", () => { if (map) map.zoomIn(); else if(vMap) vMap.zoomIn(); });
+  get("zoom-out").addEventListener("click", () => { if (map) map.zoomOut(); else if(vMap) vMap.zoomOut(); });
   get("street-sync").addEventListener("click", syncStreet);
   get("street-clear").addEventListener("click", clearStreet);
 }
@@ -452,27 +541,29 @@ function loop(timestamp) {
     specimenCamera.lookAt(-.30,-.1,0);
     specimenRenderer.render(specimenScene,specimenCamera);
   }
-  if (overlayRenderer && map && overlayCarrier) {
-    const p = map.project([state.lng, state.lat]);
+  if (overlayRenderer && (map || vMap) && overlayCarrier) {
+    const p = map ? map.project([state.lng, state.lat]) : vMap.latLngToContainerPoint([state.lat,state.lng]);
     const rect = get("map").getBoundingClientRect();
     overlayCarrier.position.set(p.x-rect.width/2,rect.height/2-p.y,0);
-    overlayCarrier.rotation.z = state.heading - map.getBearing()*DEG;
+    overlayCarrier.rotation.z = state.heading - (map ? map.getBearing()*DEG : 0);
     flap(overlayFly, state.running ? state.time : displayTime*.36);
     overlayRenderer.render(overlayScene,overlayCamera);
   }
   if (timestamp - state.lastMapUpdate > 180) {
     state.lastMapUpdate = timestamp;
     sourceData("mapfly-track", featureCollection([featureLine(state.trajectory, "Đường bay đã đi")]));
+    if (vTrack && settings.trail) vTrack.setLatLngs(state.trajectory.map(p=>[p[1],p[0]]));
     updateNumbers();
   }
-  if (state.running && settings.follow && map && timestamp - state.lastFollow > 950) {
+  if (state.running && settings.follow && (map || vMap) && timestamp - state.lastFollow > 950) {
     state.lastFollow = timestamp;
-    if (!map.isMoving()) map.easeTo({ center: [state.lng,state.lat], duration: 750 });
+    if (map && !map.isMoving()) map.easeTo({ center: [state.lng,state.lat], duration: 750 });
+    if (vMap && !vMap._animatingZoom && !vMap._panAnim?._inProgress) vMap.panTo([state.lat,state.lng],{animate:true,duration:.7});
   }
 }
 bind();
 setCity("hcm", false);
-createMap();
+switchMapEngine("vietflex");
 setupSpecimen();
 setupOverlay();
 requestAnimationFrame(loop);
