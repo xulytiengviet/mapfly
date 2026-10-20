@@ -357,7 +357,7 @@ function updateReadout(){
   el("etaLive").textContent="Còn khoảng "+Math.round(g.remaining/Math.max(4,world.speed||8.3))+" giây";
   el("neuralRate").textContent=fmt(Object.values(brain.rate).reduce((a,b)=>a+b,0)*18)+" Hz";
   el("graphSize").textContent=brain.nodes.length+" nút · "+brain.edges.length+" cạnh";
-  el("turnArrow").textContent=errorDeg>15?"↱":errorDeg< -15?"↰":"↑";
+  el("turnArrow").textContent=errorDeg>15?"↰":errorDeg< -15?"↱":"↑";
   el("turnInstruction").textContent=world.complete?"Đã đến điểm đích":errorDeg>15?"Điều chỉnh sang trái":errorDeg< -15?"Điều chỉnh sang phải":"Tiếp tục đi thẳng";
   el("destinationName").textContent=CITY_ROUTES[ctl.city].destination+" · "+fmt(g.remaining,0)+" m";
   el("visualSensor").textContent="TÍN HIỆU "+Math.round(brain.rate.visual*100)+"%";
