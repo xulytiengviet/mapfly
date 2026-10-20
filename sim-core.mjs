@@ -85,11 +85,16 @@ export function validateGraph(payload) {
     return {id,region,side,x:clamp(g.position[0]+(rand()-.5)*.22,.03,.97),y:clamp(g.position[1]+(rand()-.5)*.30,.04,.96)};
   });
   if(!nodes.some(n=>n.region==="motor")||!nodes.some(n=>n.region==="visual")||!nodes.some(n=>n.region==="central"))throw Error("Cần nhóm visual, central và motor để điều khiển.");
-  const edges=payload.edges.map(e=>{
+  const rawEdges=payload.edges.map(e=>{
     const source=strId(e.source),target=strId(e.target),weight=Number(e.weight);
     if(!ids.has(source)||!ids.has(target)||!Number.isFinite(weight)||Math.abs(weight)>100000)throw Error("Cạnh có nguồn/đích/trọng số không hợp lệ.");
-    return {source,target,weight:clamp(weight/Math.max(1,Math.abs(weight)), -1,1)};
+    return {source,target,weight};
   });
+  // Preserve relative synapse strength, rather than collapsing every count > 1 to +1.
+  // This scaling is a numerical simulation assumption, NOT synaptic physiology.
+  const magnitudes=rawEdges.map(e=>Math.abs(e.weight)).sort((a,b)=>a-b);
+  const scale=Math.max(1,magnitudes[Math.floor((magnitudes.length-1)*.90)]||1);
+  const edges=rawEdges.map(e=>({source:e.source,target:e.target,weight:clamp(e.weight/scale,-1,1)}));
   return {name:String(payload.name||"Đồ thị tự nạp").slice(0,80),source:"uploaded",nodes,edges};
 }
 export class NeuralController {
