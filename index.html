@@ -3,144 +3,98 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#07131b">
-  <meta name="description" content="MapFly NeuroGIS – mô phỏng tác tử ruồi giấm 3D trên OpenStreetMap với Google Street View và mô hình cảm biến minh họa.">
-  <title>MapFly NeuroGIS | Phòng thí nghiệm ruồi giấm 3D</title>
+  <meta name="theme-color" content="#040a10">
+  <meta name="description" content="MapFly NeuroGIS – mô phỏng ruồi giấm điều khiển tác tử trong thành phố với bản đồ OSM thực, mạng kết nối thần kinh giả lập và buồng lái 3D tương tác.">
+  <title>MapFly NeuroGIS · Tác tử ruồi giấm điều khiển GIS 3D</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Vietflexmap/VN@6144d565fcf236727577ab3c4471bbe49f86892f/dist/vietflex.css">
-  <script src="https://cdn.jsdelivr.net/gh/Vietflexmap/VN@6144d565fcf236727577ab3c4471bbe49f86892f/dist/vietflex.js"></script>
-  <link href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.6.2/dist/maplibre-gl.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.6.2/dist/maplibre-gl.js"></script>
-  <style>
-    :root{font-family:"Be Vietnam Pro",system-ui,sans-serif;color:#eaf4f7;background:#07131b;font-synthesis:none;--panel:#0c202b;--line:#233b46;--muted:#93aab4;--amber:#ffce70;--teal:#65dbcf;--blue:#78b9ee}
-    *{box-sizing:border-box}html,body{margin:0;min-height:100%}button,input,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}a{color:#86e7db}a:hover{color:white}
-    .shell{display:grid;grid-template-columns:290px minmax(400px,1fr) 348px;min-height:100vh;height:100dvh;overflow:hidden}
-    .sidebar,.inspector{min-height:0;overflow-y:auto;background:#0a1a24;scrollbar-color:#294350 transparent;scrollbar-width:thin}
-    .sidebar{border-right:1px solid var(--line);padding:23px 20px 26px}.inspector{border-left:1px solid var(--line);padding:18px 17px}
-    .brand{display:flex;gap:12px;align-items:center}.brand-mark{display:grid;place-items:center;font-size:24px;width:47px;height:47px;border-radius:16px;background:linear-gradient(135deg,#f8cb76,#b48c50);box-shadow:0 7px 30px #eeb6532b;color:#1d2930}
-    .brand-name{font-size:20px;letter-spacing:.04em;font-weight:800}.brand-name span{color:var(--amber)}.brand-sub{font-size:10px;letter-spacing:.17em;color:#9ab3bf;margin-top:3px}
-    .eyebrow{font:600 10px "JetBrains Mono",monospace;color:var(--teal);letter-spacing:.18em;text-transform:uppercase}
-    .section{border-top:1px solid var(--line);margin-top:22px;padding-top:21px}.section h2,.panel h2{font-size:13px;margin:0 0 14px;font-weight:700;letter-spacing:.02em}
-    .intro{color:#a5bac3;font-size:12px;line-height:1.8;margin:20px 0}
-    .field{display:block;margin:15px 0}.field-header{display:flex;justify-content:space-between;gap:6px;align-items:center;margin-bottom:8px;color:#c9d8de;font-size:11px}.value{color:var(--amber);font:600 11px "JetBrains Mono"}
-    select,.key-input{width:100%;background:#102934;border:1px solid #31505c;border-radius:10px;padding:12px;color:#eef8fb;outline:none;min-width:0}
-    select:focus,.key-input:focus{border-color:var(--teal)}option{background:#102934}
-    input[type=range]{width:100%;height:5px;accent-color:var(--amber);cursor:pointer}
-    .actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:13px}
-    .btn{border:1px solid #39525d;background:#142d38;color:#eef8fb;border-radius:10px;padding:11px 12px;font-weight:700;font-size:11px;transition:filter .2s,transform .2s}
-    .btn:hover{filter:brightness(1.18);transform:translateY(-1px)}
-    .btn-primary{background:var(--amber);border-color:var(--amber);color:#142431}
-    .btn-wide{width:100%}.btn-ghost{background:transparent}
-    .toggle{display:flex;justify-content:space-between;align-items:center;padding:11px 0;font-size:11px;color:#d4e2e6;gap:12px}
-    .toggle input{width:16px;height:16px;accent-color:var(--teal)}
-    .notice{font-size:10px;line-height:1.7;color:#92aab4;border:1px solid #36515a;border-radius:12px;padding:12px;background:#102732;margin-top:22px}
-    .notice strong{color:#ffd98f}.credit{color:#688b9c;font-size:10px;line-height:1.7;margin-top:20px}
-    .workspace{position:relative;min-height:0;background:#132631;isolation:isolate}.map{position:absolute;inset:0}.map.leaflet-container{background:#132631}.leaflet-control-attribution{font-size:9px!important}.leaflet-bottom.leaflet-right{bottom:2px;right:10px}.leaflet-control-attribution a{color:#176d69!important}.fly-overlay{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
-    .workspace:after{content:"";position:absolute;inset:0 0 auto;height:225px;background:linear-gradient(#06151cdd,transparent);pointer-events:none;z-index:2}
-    .map-header{position:absolute;z-index:4;top:26px;left:26px;right:26px;display:flex;justify-content:space-between;align-items:flex-start;gap:20px;pointer-events:none}
-    .map-header h1{font-size:clamp(21px,2vw,32px);letter-spacing:-.045em;line-height:1.27;margin:9px 0;color:white;max-width:460px}
-    .map-header p{margin:0;color:#c2d2d8;font-size:11px;line-height:1.65;max-width:460px}
-    .live-pill{white-space:nowrap;padding:10px 13px;border:1px solid #43616c;background:#0a2027b8;border-radius:100px;font-size:10px;font-weight:700;display:flex;gap:9px;align-items:center}
-    .live-pill i{width:8px;height:8px;border-radius:50%;background:#ffbb63;box-shadow:0 0 13px #ffbb63}
-    .live-pill.active i{background:#69dfbb;box-shadow:0 0 13px #69dfbb}
-    .map-tools{position:absolute;z-index:5;top:188px;right:21px;display:grid;gap:8px}
-    .icon-btn{width:39px;height:39px;border:1px solid #50717d;border-radius:11px;background:#091d27e8;color:#d8eff1;font-size:16px}
-    .map-footer{position:absolute;z-index:4;bottom:28px;left:24px;right:24px;display:flex;flex-direction:column;gap:11px;pointer-events:none}
-    .tip{align-self:flex-start;background:#071e27cc;border:1px solid #3b5c66;border-radius:9px;padding:9px 12px;font-size:10px;color:#deebed;max-width:100%}
-    .metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
-    .metric{padding:13px;border:1px solid #425d66;background:#081d27ec;backdrop-filter:blur(14px);border-radius:12px;min-width:0}
-    .metric small{font-size:9px;color:#a3b9c1;display:block;margin-bottom:6px}.metric strong{font:600 clamp(12px,1.3vw,17px) "JetBrains Mono";white-space:nowrap;color:#f7d591}.metric em{display:block;font-style:normal;color:#78a0af;font-size:9px;margin-top:5px}
-    .panel{background:#102631;border:1px solid #294450;border-radius:15px;padding:15px;margin-bottom:13px}
-    .panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:11px}
-    .panel-head h2{margin:0}.tag{font:500 9px "JetBrains Mono";color:#8adfd4;border:1px solid #40766d;padding:5px 7px;border-radius:6px}
-    .small{font-size:10px;color:#a6bdc7;line-height:1.75;margin:10px 0}
-    .specimen{position:relative;height:205px;border-radius:12px;background:radial-gradient(ellipse at 48% 46%,#243f49,#081922 72%);overflow:hidden;border:1px solid #2c4651;cursor:grab}
-    .specimen:active{cursor:grabbing}.specimen:before{content:"";position:absolute;inset:15px;background:linear-gradient(to right,#38586344 1px,transparent 1px),linear-gradient(to bottom,#38586344 1px,transparent 1px);background-size:24px 24px;pointer-events:none}
-    .specimen canvas{width:100%;height:100%;display:block}.specimen-caption{display:flex;justify-content:space-between;color:#83a7b5;font:9px "JetBrains Mono";margin-top:9px}
-    .brain-legend{display:grid;gap:13px;margin:15px 0 8px}.brain-label{display:flex;justify-content:space-between;gap:5px;font-size:11px;color:#c4d5dc;margin-bottom:7px}.brain-label span:last-child{font:600 11px "JetBrains Mono";color:#d9e8ec}
-    .bar{height:6px;background:#25424d;border-radius:10px;overflow:hidden}.bar>span{height:100%;display:block;border-radius:10px;background:linear-gradient(90deg,#358e95,#91e6cd);transition:width .15s}
-    .state-text{background:#19333e;border:1px solid #2f515d;border-radius:9px;padding:10px;color:#ffdc97;font-size:11px;margin-top:12px}
-    .street-box{height:210px;border:1px solid #345360;background:#0b202a;border-radius:11px;display:grid;place-items:center;text-align:center;padding:15px;position:relative;overflow:hidden}
-    .street-box iframe,.street-box canvas{width:100%;height:100%;border:0;position:absolute;inset:0;display:block}.street-box .pov-label{position:absolute;z-index:2;top:10px;left:10px;background:#082c36cc;color:#d9fff2;font:600 9px "JetBrains Mono",monospace;letter-spacing:.03em;border:1px solid #497f86;padding:7px 8px;border-radius:7px;pointer-events:none}
-    .street-empty{font-size:11px;color:#aac1c9;line-height:1.9}
-    .street-empty b{display:block;color:#ffce70;font-size:13px;margin-bottom:5px}
-    .street-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
-    .street-link{font-size:10px;text-decoration:none;display:inline-flex;align-items:center;gap:5px;line-height:1.7}
-    .data-note{font-size:10px;line-height:1.8;color:#9cb8c5}.data-note a{font-size:10px}
-    .maplibregl-ctrl-bottom-right{bottom:4px;right:12px}.maplibregl-ctrl-attrib{font-size:9px!important;opacity:.85}
-    
-    .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
-    @media(max-width:1250px){.shell{grid-template-columns:250px minmax(350px,1fr) 303px}.sidebar{padding:19px 15px}.inspector{padding:14px 11px}.map-header{left:17px;top:20px}.map-footer{left:15px;right:15px}}
-    @media(max-width:1000px){.shell{height:auto;min-height:100vh;overflow:visible;grid-template-columns:minmax(0,1fr) 310px;grid-template-areas:"map side" "inspect inspect"}.sidebar{grid-area:side;overflow:visible;border:0}.workspace{grid-area:map;height:710px}.inspector{grid-area:inspect;overflow:visible;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.inspector .panel{margin:0}}
-    @media(max-width:700px){.shell{grid-template-columns:1fr;grid-template-areas:"map" "side" "inspect"}.workspace{height:670px}.map-header{right:12px;left:15px;top:16px}.map-header h1{font-size:22px}.map-header p{display:none}.live-pill{font-size:9px;padding:8px}.map-tools{top:130px;right:13px}.map-footer{bottom:42px;left:12px;right:12px}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.metric{padding:10px}.metric strong{font-size:14px}.tip{font-size:9px}.sidebar{border-top:1px solid var(--line);padding:20px}.inspector{display:block}.inspector .panel{margin-bottom:12px}}
-    @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important}}
-  </style>
+  <link rel="stylesheet" href="./driver.css">
+  <script defer src="https://cdn.jsdelivr.net/gh/Vietflexmap/VN@6144d565fcf236727577ab3c4471bbe49f86892f/dist/vietflex.js"></script>
+  <script type="module" src="./driver.js"></script>
 </head>
 <body>
-<div class="shell">
-  <aside class="sidebar" aria-label="Bảng điều khiển mô phỏng">
-    <header class="brand"><div class="brand-mark" aria-hidden="true">✳</div><div><div class="brand-name">MAP<span>FLY</span></div><div class="brand-sub">NEUROGIS · PHÒNG THÍ NGHIỆM</div></div></header>
-    <p class="intro">Thử nghiệm tác tử ruồi giấm bay trong không gian đô thị, kết hợp bản đồ GIS, hình học 3D và các phản ứng cảm biến minh họa.</p>
-    <div class="eyebrow">01 / KỊCH BẢN BAY</div>
-    <label class="field"><div class="field-header"><span>Nền bản đồ (không cần API key)</span><span class="value">MIỄN PHÍ</span></div><select id="renderer"><option value="vietflex">Vietflex + OSM · 2D nhẹ</option><option value="maplibre">MapLibre + OSM · 3D đô thị</option></select></label>
-    <p class="small" id="engine-note">Vietflex hoạt động với lớp OSM và hiển thị ruồi 3D; không tải Google Tiles không chính thức.</p>
-    <label class="field"><div class="field-header"><span>Khu vực nghiên cứu</span></div><select id="city"><option value="hcm">TP. Hồ Chí Minh · Bến Thành</option><option value="hanoi">Hà Nội · Hồ Hoàn Kiếm</option><option value="vinhlong">Vĩnh Long · Trung tâm</option></select></label>
-    <div class="actions"><button id="start" class="btn btn-primary">▶ Bắt đầu bay</button><button id="pause" class="btn">Ⅱ Tạm dừng</button><button id="reset" class="btn btn-ghost">↺ Đặt lại</button><button id="export" class="btn btn-ghost">↓ Xuất GeoJSON</button></div>
-    <section class="section"><div class="eyebrow">02 / THÔNG SỐ TÁC TỬ</div>
-      <label class="field"><div class="field-header"><span>Gia tốc thời gian</span><span class="value" id="speed-value">12×</span></div><input id="speed" type="range" min="1" max="40" step="1" value="12"></label>
-      <label class="field"><div class="field-header"><span>Độ cao giả định</span><span class="value" id="alt-value">5 m</span></div><input id="altitude" type="range" min="1" max="30" step="1" value="5"></label>
-      <label class="field"><div class="field-header"><span>Tín hiệu mùi (giả lập)</span><span class="value" id="odor-value">65%</span></div><input id="odor" type="range" min="0" max="100" value="65"></label>
-      <label class="field"><div class="field-header"><span>Cường độ nguy cơ (giả lập)</span><span class="value" id="threat-value">30%</span></div><input id="threat" type="range" min="0" max="100" value="30"></label>
-      <label class="field"><div class="field-header"><span>Nhiễu gió (giả lập)</span><span class="value" id="wind-value">20%</span></div><input id="wind" type="range" min="0" max="100" value="20"></label>
-    </section>
-    <section class="section"><div class="eyebrow">03 / HIỂN THỊ BẢN ĐỒ</div>
-      <label class="toggle">Tự bám theo ruồi <input id="follow" type="checkbox" checked></label>
-      <label class="toggle">Công trình 3D (chế độ OSM 3D) <input id="buildings" type="checkbox" checked></label>
-      <label class="toggle">Hiện vệt đường bay <input id="trail" type="checkbox" checked></label>
-      <button id="recenter" class="btn btn-wide btn-ghost">⌖ Đưa bản đồ về tác tử</button>
-    </section>
-    <div class="notice"><strong>Lưu ý khoa học:</strong> Đây là mô phỏng điều hướng dựa trên quy tắc (Geo-ABM), chưa sử dụng trực tiếp toàn bộ kết nối thần kinh MaleCNS hay FlyWire. Ruồi trên bản đồ được phóng đại để nhìn rõ, không theo tỷ lệ thực tế.</div>
-    <footer class="credit">Thiết kế: Long Ngo · Giấy phép MIT (mã MapFly).<br>Vietflex · OpenStreetMap contributors · MapLibre · Three.js. Mọi lớp nền phải tuân thủ điều kiện của nhà cung cấp.</footer>
-  </aside>
-  <main class="workspace" aria-label="Bản đồ mô phỏng không gian địa lý">
-    <div id="map" class="map" role="application" aria-label="Bản đồ Vietflex hoặc MapLibre dựa trên dữ liệu OpenStreetMap"></div>
-    <canvas id="fly-overlay" class="fly-overlay" aria-hidden="true"></canvas>
-    <div class="map-header"><div><div class="eyebrow">THÍ NGHIỆM GEO-ABM / KHÔNG GIAN 3 CHIỀU</div><h1>Một con ruồi.<br>Cả thành phố.</h1><p>Theo dõi lộ trình, độ cao, cảm biến và chuyển động của ruồi giấm trong môi trường địa lý.</p></div><div id="run-status" class="live-pill"><i></i><span>ĐANG TẠM DỪNG</span></div></div>
-    <div class="map-tools"><button class="icon-btn" id="pitch" title="Chuyển góc nhìn 2D / 3D" aria-label="Chuyển góc nhìn 2D / 3D">◈</button><button class="icon-btn" id="zoom-in" title="Phóng to" aria-label="Phóng to">+</button><button class="icon-btn" id="zoom-out" title="Thu nhỏ" aria-label="Thu nhỏ">−</button></div>
-    <div class="map-footer"><div id="map-tip" class="tip">⌖ Chạm vào bản đồ để đặt điểm đích mới · Nhấn ◈ để chuyển chế độ OSM 3D</div><div class="metrics">
-      <div class="metric"><small>TỌA ĐỘ WGS84</small><strong id="position">10.77595° N</strong><em id="position-lng">106.70103° E</em></div>
-      <div class="metric"><small>QUÃNG ĐƯỜNG</small><strong id="distance">0.0 m</strong><em>Mô phỏng quy tắc</em></div>
-      <div class="metric"><small>VẬN TỐC / ĐỘ CAO</small><strong id="velocity">0.0 m/s</strong><em id="height-readout">Cao 5 m</em></div>
-      <div class="metric"><small>THỜI GIAN MÔ PHỎNG</small><strong id="elapsed">00:00</strong><em id="heading">Hướng 000°</em></div>
-    </div></div>
-  </main>
-  <aside class="inspector" aria-label="Giám sát ruồi giấm và chế độ Street View">
-    <section class="panel"><div class="panel-head"><h2>Giải phẫu 3D · Ruồi giấm</h2><span class="tag">Three.js</span></div><div class="specimen" id="specimen" aria-label="Mô hình ruồi giấm 3D có thể kéo để xoay"></div><div class="specimen-caption"><span>DROSOPHILA MELANOGASTER</span><span>KÉO ĐỂ XOAY · CUỘN ĐỂ PHÓNG TO</span></div><p class="small">Mô hình hình học thủ tục: đầu, mắt kép, ngực, bụng, 6 chân, cặp cánh và các cơ quan giữ thăng bằng. Không phải bản quét giải phẫu.</p></section>
-    <section class="panel"><div class="panel-head"><h2>Phản ứng thần kinh minh họa</h2><span class="tag">Geo-ABM</span></div>
-      <div class="brain-legend">
-        <div><div class="brain-label"><span>Thị giác · Định hướng</span><span id="vision-number">45%</span></div><div class="bar"><span id="vision-bar" style="width:45%"></span></div></div>
-        <div><div class="brain-label"><span>Khứu giác · Tìm nguồn mùi</span><span id="smell-number">65%</span></div><div class="bar"><span id="smell-bar" style="width:65%"></span></div></div>
-        <div><div class="brain-label"><span>Phản xạ · Tránh nguy cơ</span><span id="avoid-number">30%</span></div><div class="bar"><span id="avoid-bar" style="width:30%"></span></div></div>
+<header class="topbar">
+  <div class="brand"><div class="brand-icon" aria-hidden="true">✳</div><div><div class="brand-name">MAPFLY <em>NEUROGIS</em></div><div class="brand-sub">FRUIT FLY AGENT · GIS 3D · CONNECTOME-INSPIRED</div></div></div>
+  <div class="top-context"><strong>Phòng thí nghiệm tác tử ruồi giấm</strong><div>Buồng lái 3D · Định tuyến đường phố OSM · Mạch thần kinh sinh học minh họa</div></div>
+  <div class="top-right"><span class="live"><i id="liveDot" class="dot"></i><span id="liveText">TẠM DỪNG</span></span><div class="clock" id="clock">00:00:00<small id="simClock">SIM × 1.0</small></div><a class="menu-link" href="./legacy.html" title="Mở phiên bản MapFly bay tự do trước đây">Bay tự do ↗</a></div>
+</header>
+<main class="layout">
+ <section class="primary" aria-label="Mô phỏng điều hướng và GIS 3D">
+  <article class="panel stage-panel">
+    <div class="panel-head stage-head"><div><h1 class="panel-title">◈ Buồng lái tác tử ruồi giấm · 3D Environment</h1><div class="panel-caption">Hệ điều khiển thần kinh giả lập trong môi trường địa lý thực</div></div><div class="stage-head-right"><button id="viewCockpit" class="tab active" type="button">◉ Buồng lái 3D</button><button id="viewMap" class="tab" type="button">▦ Bản đồ lớn</button></div></div>
+    <div id="stage" class="stage">
+      <canvas id="sceneCanvas" aria-label="Cảnh 3D buồng lái ruồi giấm trên đường phố mô phỏng"></canvas>
+      <div id="sceneFallback" class="scene-fallback">Không thể mở WebGL. Bản đồ OSM vẫn có thể hoạt động bên dưới.</div>
+      <div class="stage-shade"></div>
+      <div class="stage-stamp">● &nbsp;<span>MÔ PHỎNG THỜI GIAN THỰC</span> · 3D CẢNH TỔNG HỢP</div>
+      <div class="map-inset" id="miniMapWrap"><div class="map-caption"><strong>GIS Route · Bản đồ OSM thực</strong><span id="mapMode">TUYẾN GIẢ LẬP</span></div><div id="map" aria-label="Bản đồ OSM tương tác, điểm đích và đường chạy tác tử"></div></div>
+      <div class="route-guidance"><div class="arrow" id="turnArrow">↑</div><strong id="turnInstruction">Sẵn sàng xuất phát</strong><p id="destinationName">Đang chờ xác định điểm đích</p><span class="source" id="routeSource">Lộ trình định sẵn · mô phỏng</span></div>
+      <div class="stage-note"><b>Chú thích:</b> Thành phố trong buồng lái là hình học 3D tổng hợp. Chỉ bản đồ inset hiển thị nền địa lý OSM thực.</div>
+      <div class="dash-hud">
+        <div class="dash-cell"><small>VẬN TỐC TÁC TỬ</small><b class="cyan" id="speedLive">0.0</b><div class="minor">km/h · tốc độ mô phỏng</div></div>
+        <div class="dash-cell"><small>HƯỚNG DI CHUYỂN</small><b id="headingLive">000°</b><div class="minor">WGS84 · bearing</div></div>
+        <div class="dash-cell"><small>TÍN HIỆU ĐIỀU KHIỂN</small><b class="orange" id="steerLive">+0.0°</b><div class="minor">góc lái giả lập</div></div>
+        <div class="dash-cell"><small>TÌNH TRẠNG TUYẾN</small><b style="font-size:14px;color:#72e7af" id="routeState">CHỜ</b><div class="minor" id="routeError">Sai lệch 0.0°</div></div>
       </div>
-      <div id="behavior" class="state-text">◉ Trạng thái: chờ lệnh xuất phát</div>
-      <p class="small">Các thanh phản ứng là giá trị minh họa theo quy tắc, không phải kết quả đo neuron hay dự đoán từ mô hình connectome thật.</p>
-    </section>
-    <section class="panel"><div class="panel-head"><h2>Google Street View</h2><span class="tag">360°</span></div>
-      <div id="street-box" class="street-box"><div class="street-empty"><b>Góc nhìn ruồi 3D · miễn phí</b>Phố 3D tổng hợp, mô phỏng bằng Three.js. Không phải ảnh đường phố thực.</div></div>
-      <button id="pov-btn" class="btn btn-primary btn-wide" style="margin-top:10px">◈ Xem góc nhìn ruồi 3D · Không cần API key</button>
-      <details style="margin-top:13px"><summary style="cursor:pointer;color:#b3cbd3;font-size:11px">Tùy chọn: nhúng Google Street View (cần API key)</summary>
-        <label class="field"><div class="field-header"><span>Google Maps Embed API key (không lưu lại)</span></div><input id="google-key" type="password" class="key-input" autocomplete="off" placeholder="Nhập khóa đã giới hạn tên miền"></label>
-        <div class="street-actions"><button id="street-sync" class="btn">↻ Hiện Google Street View</button><button id="street-clear" class="btn">✕ Trở lại 3D giả lập</button></div>
-      </details>
-      <a id="street-external" class="street-link" href="https://www.google.com/maps" target="_blank" rel="noopener noreferrer">↗ Xem Street View trên Google Maps · mở liên kết miễn phí</a>
-      <p class="small">Góc nhìn 3D là cảnh tổng hợp mang tính minh họa, không phải dữ liệu nhà cửa hay ảnh phố thực. Google Street View mở qua liên kết công khai không yêu cầu API key; nhúng trực tiếp bằng Maps Embed API hiện miễn phí theo bảng giá Google, nhưng vẫn cần API key và thiết lập tài khoản thanh toán.</p>
-    </section>
-    <section class="panel"><div class="panel-head"><h2>Nguồn connectome & kỹ thuật</h2><span class="tag">Tài liệu</span></div><div class="data-note">Kết nối thần kinh thực được nghiên cứu độc lập qua <a href="https://codex.flywire.ai/" target="_blank" rel="noopener">FlyWire Codex</a>, <a href="https://github.com/CAVEconnectome" target="_blank" rel="noopener">CAVE</a>, <a href="https://github.com/google/neuroglancer" target="_blank" rel="noopener">Neuroglancer</a> và <a href="https://github.com/seung-lab/FlyConnectome" target="_blank" rel="noopener">FlyConnectome</a>. Tham khảo <a href="https://github.com/erojasoficial-byte/fly-brain" target="_blank" rel="noopener">fly-brain / MuJoCo</a> để phát triển pipeline mô phỏng toàn não riêng. <a href="https://male-cns.janelia.org/" target="_blank" rel="noopener">MaleCNS v1.0</a> (ruồi <strong>đực</strong>, 166.700 neuron) là dữ liệu CNS riêng biệt. Tập FlyWire FAFB công bố trên Nature 2024 thuộc ruồi <strong>cái</strong> (139.255 neuron). Cần kiểm tra giấy phép của từng bộ dữ liệu trước khi tích hợp.</div></section>
-  </aside>
-</div>
-<div id="announcer" class="sr-only" role="status" aria-live="polite"></div>
-<script type="module" src="./app.js"></script>
+    </div>
+    <div class="stage-telemetry">
+      <div class="telemetry"><span>VỊ TRÍ GPS · WGS84</span><strong id="gpsLat">10.77595° N</strong><small id="gpsLng">106.70103° E</small></div>
+      <div class="telemetry"><span>ĐÃ DI CHUYỂN</span><strong id="distanceLive">0.0 m</strong><small id="progressLive">0% hành trình</small></div>
+      <div class="telemetry"><span>MỤC TIÊU GẦN NHẤT</span><strong id="remainingLive">—</strong><small id="etaLive">ETA —</small></div>
+      <div class="telemetry"><span>TÍN HIỆU THẦN KINH</span><strong id="neuralRate">0.0 Hz</strong><small id="neuralConfidence">Mạch mô phỏng · chưa kiểm chứng</small></div>
+    </div>
+  </article>
+  <section class="panel control-panel" aria-label="Các nút điều khiển mô phỏng">
+    <div class="control-buttons"><button class="btn btn-main" id="go" type="button">▶ Bắt đầu</button><button class="btn" id="pause" type="button">Ⅱ Tạm dừng</button><button class="btn" id="reset" type="button">↺ Đặt lại</button><button class="btn icon orange" id="turnLeft" title="Gây kích thích rẽ trái" type="button">↶ Trái</button><button class="btn icon orange" id="turnRight" title="Gây kích thích rẽ phải" type="button">↷ Phải</button></div>
+    <div class="control-slider"><label for="simSpeed">Gia tốc thời gian <output id="simSpeedValue">1.0×</output></label><input type="range" id="simSpeed" min="0.25" max="8" step="0.25" value="1"></div>
+    <div class="control-slider"><label for="neuralGain">Ảnh hưởng mạng thần kinh <output id="neuralGainValue">55%</output></label><input type="range" id="neuralGain" min="0" max="100" step="5" value="55"></div>
+  </section>
+  <section class="panel sensor-strip" aria-label="Các cảm biến mô phỏng">
+    <div class="sensor"><i>◉</i><div><strong>THỊ GIÁC</strong><small id="visualSensor">MÔ PHỎNG</small></div></div>
+    <div class="sensor"><i>≋</i><div><strong>KHỨU GIÁC</strong><small id="smellSensor">MÔ PHỎNG</small></div></div>
+    <div class="sensor"><i>⌖</i><div><strong>GPS · OSM</strong><small>BẢN ĐỒ THẬT</small></div></div>
+    <div class="sensor"><i>↗</i><div><strong>IMU</strong><small id="imuSensor">MÔ PHỎNG</small></div></div>
+    <div class="sensor"><i>⎔</i><div><strong>VA CHẠM</strong><small>CHƯA TÍCH HỢP</small></div></div>
+  </section>
+  <section class="panel bottom-panel">
+    <div><label class="form-label" for="city">KHU VỰC ĐỊA LÝ</label><select class="field" id="city"><option value="hcm">TP. Hồ Chí Minh · khu vực Bến Thành</option><option value="hanoi">Hà Nội · khu vực Hồ Hoàn Kiếm</option><option value="vinhlong">Vĩnh Long · trung tâm thành phố</option></select><div class="route-text">Chọn thành phố, sau đó nhấn <b>Tạo tuyến OSM</b> để thử lấy hình học đường từ dịch vụ định tuyến công khai. Nếu không khả dụng, hệ thống dùng tuyến minh họa đã định nghĩa trước.</div></div>
+    <div><label class="form-label">BẢN ĐỒ ĐIỀU HƯỚNG</label><button class="btn" id="roadRoute" type="button">⌖ Tạo tuyến OSM miễn phí</button><button class="btn" id="export" type="button">↓ GeoJSON</button><p class="route-text"><span class="route-badge" id="routeType">SIMULATED ROUTE</span> · Đồ thị kết nối thần kinh mẫu tạo lệnh lái; không phải hệ thần kinh sống, không kết nối Google CARLA.</p></div>
+  </section>
+ </section>
+ <aside class="side" aria-label="Bảng thần kinh và phản ứng cơ học">
+  <section class="panel neuro-card">
+    <div class="panel-head"><div><h2 class="panel-title">✳ Neural Activity · Kết nối thần kinh</h2><p class="panel-caption">Cấu trúc vùng giải phẫu tham khảo · Xung và trọng số giả lập</p></div><span id="connectomeBadge" class="chip orange">DEMO GRAPH</span></div>
+    <div class="neuro-pane"><canvas id="neuralCanvas" aria-label="Đồ thị nút và liên kết thần kinh mô phỏng"></canvas>
+      <div class="neuro-legend"><span class="legend-key"><i style="background:#28d4ef"></i>Thị giác</span><span class="legend-key"><i style="background:#58de9f"></i>Khứu giác</span><span class="legend-key"><i style="background:#ffaa52"></i>Central complex</span><span class="legend-key"><i style="background:#bc88ff"></i>Đầu ra vận động</span></div>
+    </div>
+    <div class="raster-wrap"><div class="raster-head"><span>Neural activity · Mô phỏng spike rate</span><span>4 kênh · 4 s</span></div><canvas id="rasterCanvas" aria-label="Biểu đồ raster xung thần kinh giả lập"></canvas></div>
+    <div class="neuro-foot"><p><span id="graphSize">0 nút · 0 cạnh</span> · <span id="neuroMode">Định tuyến mô phỏng</span></p><label class="import-btn" for="connectomeFile">↑ Nạp đồ thị JSON</label><input id="connectomeFile" type="file" accept=".json,application/json" hidden></div>
+    <div class="mode-note"><strong>Lưu ý:</strong> Sơ đồ mặc định chỉ mô phỏng liên kết giữa các nhóm vùng thần kinh lấy cảm hứng từ ruồi giấm. Nếu nạp đồ thị synapse thực được trích xuất hợp pháp từ MaleCNS, hệ thống dùng các cạnh đó nhưng vẫn phải giả định động lực học và giải mã vận động. Không mô phỏng ý thức.</div>
+  </section>
+  <section class="panel">
+    <div class="panel-head"><div><h2 class="panel-title">⏣ Foreleg Control · Điều khiển chi trước</h2><p class="panel-caption">Phản ứng khớp và cơ cấu lái · đơn vị giả định</p></div><span class="chip">ACTUATOR SIM</span></div>
+    <div class="actuator-content"><div class="leg-pane"><canvas id="legCanvas" aria-label="Mô hình cơ cấu điều khiển chân trước và vô lăng ảo"></canvas><span class="label">TÍN HIỆU CƠ · GIẢ LẬP</span></div>
+      <div class="traces"><div class="trace"><div class="trace-title"><span>Góc lái · steering</span><b id="steerTrace">+0.0°</b></div><canvas id="steerChart"></canvas></div><div class="trace"><div class="trace-title"><span>Lực chi trước · lực giả định</span><b id="forceTrace">0.00 mN</b></div><canvas id="forceChart"></canvas></div><div class="trace"><div class="trace-title"><span>Vị trí khớp · joint</span><b id="jointTrace">0.00 rad</b></div><canvas id="jointChart"></canvas></div></div>
+    </div>
+  </section>
+  <section class="panel">
+    <div class="panel-head"><div><h2 class="panel-title">⌘ Kích thích &amp; thử nghiệm</h2><p class="panel-caption">Điều khiển nguồn cảm giác giả lập</p></div><span class="chip green">LOCAL SIM</span></div>
+    <div class="side-controls">
+      <div class="control-slider"><label for="odor">Cường độ mùi <output id="odorValue">40%</output></label><input id="odor" type="range" min="0" max="100" value="40"></div>
+      <div class="control-slider"><label for="wind">Nhiễu gió <output id="windValue">15%</output></label><input id="wind" type="range" min="0" max="100" value="15"></div>
+      <div class="options-grid"><label class="setting-label"><input id="follow" type="checkbox" checked> Bám theo GPS</label><label class="setting-label"><input id="neuralControl" type="checkbox" checked> Điều khiển thần kinh</label></div>
+      <p class="small">Để dùng neuron thực: <a href="https://male-cns.janelia.org/download/" target="_blank" rel="noopener">MaleCNS v1.0</a> → xuất tập con nút/cạnh → nạp JSON → kiểm định phản ứng. Kết nối thật không đồng nghĩa với phản ứng thần kinh đã được xác nhận.</p>
+    </div>
+  </section>
+  <section class="panel">
+    <div class="panel-head"><div><h2 class="panel-title">ⓘ Nguồn & giới hạn mô phỏng</h2><span class="chip">OPEN SOURCE</span></div>
+    <div class="info-row"><strong>Địa lý:</strong> dữ liệu nền OpenStreetMap qua Vietflex; tuyến OSRM chỉ khi dịch vụ công khai phản hồi. <strong>3D:</strong> thành phố và buồng lái dựng thủ tục bằng Three.js, không phải Google Earth hay CARLA.<br><strong>Thần kinh:</strong> nhóm vùng dựa trên kiến thức ruồi giấm, đồ thị mặc định và spike rate là giả lập. <a href="https://github.com/flyconnectome/2025malecns" target="_blank" rel="noopener">Nguồn MaleCNS</a>. Việc nạp đồ thị không tự động xác thực mô hình.</div>
+  </section>
+ </aside>
+</main>
+<footer class="footer"><span>MAPFLY NEUROGIS · 2026 · Thiết kế: Long Ngo · MIT · Đào tạo, thử nghiệm và nghiên cứu Geo-ABM.</span><span><a href="https://github.com/xulytiengviet/mapfly" target="_blank" rel="noopener">GitHub</a> · <a href="./legacy.html">Chế độ bay tự do</a> · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a></span></footer>
+<div id="announcer" style="position:absolute;width:1px;height:1px;clip-path:inset(50%);overflow:hidden" role="status" aria-live="polite"></div>
 </body>
 </html>
