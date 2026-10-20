@@ -1,0 +1,68 @@
+{
+  "name": "Ví dụ đồ thị minh họa: không phải synapse MaleCNS",
+  "source": "synthetic-example",
+  "nodes": [
+    {
+      "id": "vL",
+      "region": "visual",
+      "side": -1
+    },
+    {
+      "id": "vR",
+      "region": "visual",
+      "side": 1
+    },
+    {
+      "id": "oL",
+      "region": "olfactory",
+      "side": -1
+    },
+    {
+      "id": "cL",
+      "region": "central",
+      "side": -1
+    },
+    {
+      "id": "cR",
+      "region": "central",
+      "side": 1
+    },
+    {
+      "id": "mL",
+      "region": "motor",
+      "side": -1
+    },
+    {
+      "id": "mR",
+      "region": "motor",
+      "side": 1
+    }
+  ],
+  "edges": [
+    {
+      "source": "vL",
+      "target": "cL",
+      "weight": 4
+    },
+    {
+      "source": "vR",
+      "target": "cR",
+      "weight": 4
+    },
+    {
+      "source": "oL",
+      "target": "cR",
+      "weight": 2
+    },
+    {
+      "source": "cL",
+      "target": "mL",
+      "weight": 6
+    },
+    {
+      "source": "cR",
+      "target": "mR",
+      "weight": 6
+    }
+  ]
+}
