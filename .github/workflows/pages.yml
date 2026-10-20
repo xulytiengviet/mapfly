@@ -23,6 +23,8 @@ jobs:
     steps:
       - name: Tai ma nguon
         uses: actions/checkout@v4
+      - name: Kiem tra cu phap va cau hinh mien phi
+        run: node tests/smoke.mjs
       - name: Cau hinh GitHub Pages
         uses: actions/configure-pages@v5
       - name: Dong goi trang web
